@@ -1,4 +1,9 @@
 {
+  // for js bundled files
+  "compilerOptions": {
+    "allowJs": true,
+    "noImplicitAny": false,
+  },
   "files": [],
   "references": [
     {

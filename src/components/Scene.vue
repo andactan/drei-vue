@@ -1,56 +1,48 @@
 <script setup lang="ts">
-import * as THREE from 'three';
-import { onMounted, provide, ref, useSlots } from 'vue';
+import { Scene, PerspectiveCamera, WebGLRenderer, Mesh, Camera, Color, Texture, BoxGeometry, MeshBasicMaterial } from "three";
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { onMounted, provide, ref, useSlots, type Ref, watch, computed, toRaw, inject, onBeforeMount } from 'vue';
+import { RendererInjectionKey, SceneInjectionKey } from "../keys";
 
-const meshList = ref([]);
-const addObjToMeshList = (obj: any) => {
-  meshList.value.push(obj);
+// define props
+const props = defineProps<{
+  camera: Camera,
+  background: Color | Texture
+}>();
+
+// main scene
+const scene = new Scene();
+
+const meshArr = ref<Mesh[]>([]);
+const updateMeshArr = (e: Mesh) => {
+  meshArr.value.push(e);
 }
 
-provide('parentFunc', addObjToMeshList);
-console.log(meshList.value)
+provide(SceneInjectionKey, {
+  meshArr,
+  updateMeshArr
+});
 
+const {sceneRef, sceneChangedRef} = inject(RendererInjectionKey) as any;
+
+watch(() => meshArr.value.length, (newLength, oldLength) => {
+  console.log("added meshes")
+  const args = toRaw(meshArr.value).slice(oldLength, newLength);
+  scene.add(...args);
+  sceneChangedRef.value = !sceneChangedRef.value;
+})
 
 onMounted(() => {
+  console.log("i mounted, scene")
+  sceneRef.value = scene;
+});
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-
-  const renderer = new THREE.WebGLRenderer();
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  document.body.appendChild( renderer.domElement );
-
-  // const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-  // const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-  // const cube = new THREE.Mesh( geometry, material );
-  // scene.add( cube );
-
-  const slots = useSlots();
-  if (slots.default) {
-    for (const mesh of slots.default()) {
-      const obj = new THREE.Mesh(mesh.props.geometry, mesh.props.material);
-      obj.position.set(mesh.props.position.x, mesh.props.position.y, mesh.props.position.z)
-      scene.add(obj);
-    }
-  }
-
-  camera.position.z = 10;
-  camera.position.x = 5;
-  // camera.position.y = 5;
-
-  function animate() {
-
-    requestAnimationFrame( animate );
-    renderer.render( scene, camera );
-
-    }
-
-  animate();
+onMounted(() => {
 
 });
 
 </script>
 <template>
   <div id="scene-container" />
-  <slot></slot>
+  <slot />
 </template>
