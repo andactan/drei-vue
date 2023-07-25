@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { Scene, PerspectiveCamera, WebGLRenderer, Mesh, Camera, Color, Texture, BoxGeometry, MeshBasicMaterial } from "three";
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { onMounted, provide, ref, useSlots, type Ref, watch, computed, toRaw, inject, onBeforeMount } from 'vue';
+import { Scene, Mesh, Color, Texture } from "three";
+import { onMounted, provide, ref, watch, toRaw, inject } from 'vue';
 import { RendererInjectionKey, SceneInjectionKey } from "../keys";
 
 // define props
 const props = defineProps<{
-  camera: Camera,
-  background: Color | Texture
+  background?: Color | Texture
 }>();
 
 // main scene
 const scene = new Scene();
+scene.background = props.background === undefined ? null : props.background
 
 const meshArr = ref<Mesh[]>([]);
 const updateMeshArr = (e: Mesh) => {
@@ -23,17 +22,18 @@ provide(SceneInjectionKey, {
   updateMeshArr
 });
 
-const {sceneRef, sceneChangedRef} = inject(RendererInjectionKey) as any;
+const {sceneRef, sceneChangedRef} = inject(RendererInjectionKey.scene) as any;
 
 watch(() => meshArr.value.length, (newLength, oldLength) => {
-  console.log("added meshes")
+  // add new meshes to the scene
   const args = toRaw(meshArr.value).slice(oldLength, newLength);
   scene.add(...args);
+
+  // inform parent renderer that scene has some changes to be delivered
   sceneChangedRef.value = !sceneChangedRef.value;
 })
 
 onMounted(() => {
-  console.log("i mounted, scene")
   sceneRef.value = scene;
 });
 

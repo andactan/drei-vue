@@ -1,45 +1,53 @@
 <script setup lang="ts">
 import { RendererInjectionKey, SceneInjectionKey } from '@/keys';
-import { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { Camera, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { onMounted, provide, ref, toRaw, watch } from 'vue';
+import { inject, onMounted, provide, ref, toRaw, useAttrs, watch } from 'vue';
 
 const props = defineProps<{
   width: number,
   height: number
 }>();
 
+console.log("i create, renderer")
 // renderer
 const renderer = new WebGLRenderer();
 renderer.setSize(props.width, props.height);
 document.body.appendChild( renderer.domElement );
 
 // camera
-const camera = new PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-camera.position.z = 5;
-camera.position.x = 2;
+const cameraRef = ref<Camera>(new Camera());
+const cameraChangedRef = ref(false);
 
-// controls
-const controls = new OrbitControls( camera, renderer.domElement );
-
+// scene
 const sceneRef = ref<Scene>(new Scene());
 const sceneChangedRef = ref(false);
-provide(RendererInjectionKey, {sceneRef, sceneChangedRef});
+
+// providers
+provide(RendererInjectionKey.camera, {cameraRef, cameraChangedRef});
+provide(RendererInjectionKey.scene, {sceneRef, sceneChangedRef});
+
+const controls = new OrbitControls(toRaw(cameraRef.value), renderer.domElement);
+
+watch((cameraChangedRef), () => {
+  renderer.render(toRaw(sceneRef.value), toRaw(cameraRef.value));
+  controls.update();
+})
 
 watch((sceneChangedRef), () => {
-  console.log('scene changed');
-  renderer.render(toRaw(sceneRef.value), camera);
+  renderer.render(toRaw(sceneRef.value), toRaw(cameraRef.value));
 })
 
 const animate = () => {
-  // requestAnimationFrame(animate);
-  console.log(toRaw(sceneRef.value))
-  renderer.render(toRaw(sceneRef.value), camera);
+  renderer.render(toRaw(sceneRef.value), toRaw(cameraRef.value));
 }
+console.log("i create finish, renderer")
 
 onMounted(() => {
-  console.log("I mounted, renderer")
   animate();
+  // inject meshArr for looping for animations
+  const { meshArr, updateMeshArr } = inject(SceneInjectionKey) as any;
+  console.log(meshArr)
 })
 
 </script>
