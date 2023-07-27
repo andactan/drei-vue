@@ -1,28 +1,31 @@
 <script setup lang="ts">
-import { Material, BufferGeometry, Mesh } from "three";
-import { inject, onMounted, ref } from "vue";
-import type { Position } from "../../typings";
-import { SceneInjectionKey } from "@/keys";
+import { Material, BufferGeometry, Mesh, EdgesGeometry } from "three";
+import { onMounted, onUnmounted } from "vue";
+import type { Position } from "@/typings";
+import { TickableMesh } from "@/classes"
+import { useAnimationStore } from "@/stores";
 
 const props = defineProps<{
   material: Material,
   geometry: BufferGeometry,
   position: Position,
-  // rotation?: Position
+  onMeshRotation: Function
 }>();
 
-const mesh = new Mesh(props.geometry, props.material);
-mesh.position.set(props.position.x, props.position.y, props.position.z);
-// mesh.rotation.set(props.rotation.x, props.rotation.y, props.rotation.z);
-const {_, updateMeshArr} = inject(SceneInjectionKey) as any;
+const store = useAnimationStore();
 
-onMounted(() => {
-  console.log("I mounted, mesh")
-  updateMeshArr(mesh);
+const mesh = new TickableMesh(props.geometry, props.material);
+mesh.position.set(props.position.x, props.position.y, props.position.z);
+mesh.tick = (delta: number): void => {
+  props.onMeshRotation(mesh, delta);
+}
+
+store.updateMeshArray(mesh);
+
+onUnmounted(() => {
+  props.material.dispose();
+  props.geometry.dispose();
 });
 
-defineExpose({
-  mesh
-})
-
 </script>
+<template></template>

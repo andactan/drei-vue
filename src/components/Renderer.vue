@@ -1,53 +1,63 @@
 <script setup lang="ts">
-import { RendererInjectionKey, SceneInjectionKey } from '@/keys';
-import { Camera, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { RendererInjectionKey, SceneInjectionKey } from '../keys';
+import { Camera, Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { inject, onMounted, provide, ref, toRaw, useAttrs, watch } from 'vue';
+import { inject, onMounted, onUnmounted, provide, ref, toRaw, watch } from 'vue';
+import { useAnimationStore } from "@/stores";
+import Stats from 'three/addons/libs/stats.module.js';
 
 const props = defineProps<{
   width: number,
   height: number
 }>();
 
-console.log("i create, renderer")
+const store = useAnimationStore();
+
 // renderer
-const renderer = new WebGLRenderer();
+const stats = new Stats();
+const clock = new Clock();
+const renderer = new WebGLRenderer({ antialias: false });
 renderer.setSize(props.width, props.height);
-document.body.appendChild( renderer.domElement );
+document.body.appendChild(renderer.domElement);
+document.body.appendChild(stats.dom);
 
-// camera
-const cameraRef = ref<Camera>(new Camera());
-const cameraChangedRef = ref(false);
-
-// scene
-const sceneRef = ref<Scene>(new Scene());
-const sceneChangedRef = ref(false);
-
-// providers
-provide(RendererInjectionKey.camera, {cameraRef, cameraChangedRef});
-provide(RendererInjectionKey.scene, {sceneRef, sceneChangedRef});
-
-const controls = new OrbitControls(toRaw(cameraRef.value), renderer.domElement);
-
-watch((cameraChangedRef), () => {
-  renderer.render(toRaw(sceneRef.value), toRaw(cameraRef.value));
-  controls.update();
-})
-
-watch((sceneChangedRef), () => {
-  renderer.render(toRaw(sceneRef.value), toRaw(cameraRef.value));
-})
-
-const animate = () => {
-  renderer.render(toRaw(sceneRef.value), toRaw(cameraRef.value));
+const onWindowResize = (camera: PerspectiveCamera) => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 }
-console.log("i create finish, renderer")
+
+const start = (scene: Scene, camera: Camera, stats: Stats): void => {
+  renderer.setAnimationLoop(() => {
+    tick();
+    renderer.render(scene, camera);
+    stats.update();
+  });
+}
+
+const stop = (): void => {
+  renderer.setAnimationLoop(null);
+  document.body.removeChild(renderer.domElement);
+  renderer.dispose();
+}
+
+const tick = (): void => {
+  const delta = clock.getDelta();
+  for (const mesh of store.meshArray) {
+    mesh.tick(delta);
+  }
+}
 
 onMounted(() => {
-  animate();
-  // inject meshArr for looping for animations
-  const { meshArr, updateMeshArr } = inject(SceneInjectionKey) as any;
-  console.log(meshArr)
+  const scene = toRaw(store.scene);
+  const camera = toRaw(store.camera);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  start(scene, camera, stats);
+  window.addEventListener("resize", () => onWindowResize(camera));
+});
+
+onUnmounted(() => {
+  stop();
 })
 
 </script>

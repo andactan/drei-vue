@@ -1,6 +1,10 @@
 {
   // for js bundled files
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+    },
     "allowJs": true,
     "noImplicitAny": false,
   },

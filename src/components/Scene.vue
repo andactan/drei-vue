@@ -1,44 +1,31 @@
 <script setup lang="ts">
-import { Scene, Mesh, Color, Texture } from "three";
-import { onMounted, provide, ref, watch, toRaw, inject } from 'vue';
-import { RendererInjectionKey, SceneInjectionKey } from "../keys";
+import { Scene, Mesh, Color, Texture, HemisphereLight, PointLight } from "three";
+import { onMounted, toRaw } from 'vue';
+import { useAnimationStore } from "@/stores";
 
 // define props
 const props = defineProps<{
   background?: Color | Texture
 }>();
 
+const store = useAnimationStore();
+
 // main scene
 const scene = new Scene();
 scene.background = props.background === undefined ? null : props.background
 
-const meshArr = ref<Mesh[]>([]);
-const updateMeshArr = (e: Mesh) => {
-  meshArr.value.push(e);
-}
+const light = new PointLight( 0xffffff, 1);
+light.position.set(5, 5, 5);
+scene.add(light);
 
-provide(SceneInjectionKey, {
-  meshArr,
-  updateMeshArr
-});
+const light2 = new PointLight( 0xffffff, 1);
+light2.position.set(10, 2, -5);
+scene.add(light2);
 
-const {sceneRef, sceneChangedRef} = inject(RendererInjectionKey.scene) as any;
-
-watch(() => meshArr.value.length, (newLength, oldLength) => {
-  // add new meshes to the scene
-  const args = toRaw(meshArr.value).slice(oldLength, newLength);
-  scene.add(...args);
-
-  // inform parent renderer that scene has some changes to be delivered
-  sceneChangedRef.value = !sceneChangedRef.value;
-})
+store.setScene(scene);
 
 onMounted(() => {
-  sceneRef.value = scene;
-});
-
-onMounted(() => {
-
+  store.scene.add(...toRaw(store.meshArray));
 });
 
 </script>
