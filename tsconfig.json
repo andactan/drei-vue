@@ -6,7 +6,6 @@
       "@/*": ["src/*"],
     },
     "allowJs": true,
-    "noImplicitAny": false,
   },
   "files": [],
   "references": [

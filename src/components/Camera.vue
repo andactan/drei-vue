@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { RendererInjectionKey } from "@/keys";
-import { useAnimationStore } from "@/stores";
-import { PerspectiveCamera } from "three";
-import type { Position } from "@/typings";
-import { inject, onMounted, onUnmounted } from "vue";
-import type { PropType } from 'vue'
+import { useAnimationStore } from '@/stores';
+import { PerspectiveCamera } from 'three';
+import type { Position } from '@/typings';
+import type { PropType } from 'vue';
 
 const props = defineProps({
   fov: {
@@ -27,14 +25,11 @@ const props = defineProps({
     type: Object as PropType<Position>,
     required: true
   }
-})
+});
 
 const store = useAnimationStore();
 
 const camera = new PerspectiveCamera(props.fov, props.aspect, props.near, props.far);
 camera.position.set(props.position.x, props.position.y, props.position.z);
-camera.lookAt(0, 0, 0);
 store.setCamera(camera);
-
 </script>
-<template></template>

@@ -8,8 +8,7 @@ import { computed, onMounted } from 'vue';
 import { loadObject } from './loader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-
-const sceneBackground = new THREE.Color(0xFFFFFF);
+const sceneBackground = new THREE.Color('skyblue');
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -71,11 +70,12 @@ const meshes = computed(() => {
       :aspect="width / height"
       :near="0.1"
       :far="1000"
-      :position="{ x: 10, y: 10, z: 10 }"
+      :position="{ x: 200, y: 200, z: 200 }"
     />
     <Scene :background="sceneBackground">
-      <Mesh src="/assets/models/Stork.glb" :position="{x: 0, y: 0, z:0}"/>
+      <Mesh src="/assets/models/Stork.glb" :position="{ x: 0, y: 0, z: 0 }" />
+      <Mesh src="/assets/models/Parrot.glb" :position="{ x: 200, y: 0, z: 0 }" />
+      <Mesh src="/assets/models/Flamingo.glb" :position="{ x: -200, y: 0, z: 0 }" />
     </Scene>
   </Renderer>
 </template>
-
