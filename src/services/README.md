@@ -33,3 +33,5 @@ session.removeEventListener('close', onClose);
 useEffect(updateOpenHandler, [session, onOpen]);
 useEffect(updateMessageHandler, [session, onMessage]);
 useEffect(updateCloseHandler, [session, onClose]);
+
+https://dev.to/itays123/using-websockets-with-react-js-the-right-way-no-library-needed-15d0
