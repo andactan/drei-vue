@@ -1,52 +1,75 @@
 <script setup lang="ts">
 import {
-  Material,
   BufferGeometry,
-  Mesh,
-  EdgesGeometry,
-  MeshBasicMaterial,
-  MeshPhongMaterial,
-  IcosahedronGeometry,
   Color
 } from 'three';
-import { onMounted, onUnmounted } from 'vue';
+import { onBeforeMount, onMounted, onUnmounted, onUpdated, toRaw, watch, type PropType } from 'vue';
 import type { Position } from '@/typings';
-import { TickableMesh } from '@/classes';
+import { TickableMesh } from '@/misc';
 import { useAnimationStore } from '@/stores';
+import * as definitions from "@/mappings";
+import { useLoader } from '@/hooks/useLoader';
 
-const props = defineProps<{
-  material: string;
-  geometry: string;
-  position: Position;
-  materialProps: any;
-  geometryProps: any;
-  onMeshRotation: Function;
-}>();
+interface Props {
+  src?: string,
+  material?: string,
+  geometry?: string,
+  position: Position,
+  materialProps?: any,
+  geometryProps?: any,
+  onMeshRotation?: Function
+}
 
-const MATERIAL_DEFS: { [key: string]: any } = {
-  Basic: MeshBasicMaterial,
-  Phong: MeshPhongMaterial
-};
-
-const GEO_DEFS: { [key: string]: any } = {
-  Icosahedron: IcosahedronGeometry
-};
+const props = withDefaults(defineProps<Props>(), {
+  src: "",
+  material: "Basic",
+  geometry: "Box",
+  materialProps: {},
+  geometryProps: {},
+  onMeshRotation: (delta: Number) => { console.log("not implemented") }
+})
 
 const store = useAnimationStore();
+if ("src" in props) {
+  const { data, error } = useLoader(props.src);
+  watch((data), (n) => {
+    if (n) {
+      store.updateMeshArray(toRaw(n))
+    }
+  });
 
-const material = new MATERIAL_DEFS[props.material](props.materialProps);
-const geometry = new GEO_DEFS[props.geometry](...Object.values(props.geometryProps));
-
-const mesh = new TickableMesh(geometry, material);
-mesh.position.set(props.position.x, props.position.y, props.position.z);
-mesh.tick = (delta: number): void => {
-  props.onMeshRotation(mesh, delta);
-};
-
-store.updateMeshArray(mesh);
+} else {
+  const _materialProps = {...(props as Props).materialProps};
+  for (const key of Object.keys(_materialProps)) {
+    const val = _materialProps[key];
+  
+    if (key === "color") _materialProps[key] = new Color(_materialProps[key]);
+    if (
+      (val instanceof String) &&
+      (["rgb", "hsl", "#"].some((word) => val.startsWith(word)))
+      ) {
+        _materialProps[key] = new Color(_materialProps[key]);
+      }
+  }
+  
+  const material = new definitions.MATERIAL[props.material](_materialProps);
+  
+  let geometry: BufferGeometry;
+  if (props.geometryProps) {
+    geometry = new definitions.GEOMETRY[props.geometry](...Object.values(props.geometryProps));
+  } else {
+    geometry = new definitions.GEOMETRY[props.geometry]();
+  }
+  
+  const mesh = new TickableMesh(geometry, material);
+  mesh.position.set(props.position.x, props.position.y, props.position.z);
+  mesh.tick = (delta: number): void => {
+    props.onMeshRotation(mesh, delta);
+  };
+}
 
 onUnmounted(() => {
-  material.dispose();
-  geometry.dispose();
+  store.resetMeshArray();
 });
 </script>
+<template></template>

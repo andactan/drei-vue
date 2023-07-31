@@ -20,5 +20,9 @@ export const useAnimationStore = defineStore('animation', () => {
     meshArray.value.push(value);
   }
 
-  return { scene, camera, meshArray, setScene, setCamera, updateMeshArray }
+  function resetMeshArray() {
+    meshArray.value = [];
+  }
+
+  return { scene, camera, meshArray, setScene, setCamera, updateMeshArray, resetMeshArray }
 })

@@ -4,9 +4,12 @@ import Scene from './components/Scene.vue';
 import Mesh from './components/Mesh.vue';
 import Renderer from './components/Renderer.vue';
 import Camera from './components/Camera.vue';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
+import { loadObject } from './loader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-const sceneBackground = new THREE.Color(0x000000);
+
+const sceneBackground = new THREE.Color(0xFFFFFF);
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -20,9 +23,9 @@ const meshes = computed(() => {
   const amount = 10;
   const offset = (amount - 1) / 2;
 
-  const materialColorProp = new THREE.Color('rgb(226,35,213)');
-  const materialEmissiveColor = new THREE.Color('rgb(255,128,64)');
-  const materialSpecularColor = new THREE.Color('rgb(255,155,255)');
+  const materialColorProp = 'rgb(255, 255, 0)';
+  const materialEmissiveColor = 'rgb(255,128,64)';
+  const materialSpecularColor = 'rgb(255,155,255)';
   const materialShininess = 10;
   const materialOpacity = 1;
 
@@ -32,7 +35,7 @@ const meshes = computed(() => {
       for (let k = 0; k < amount; k++) {
         const object = {
           key: `${i}${j}${k}`,
-          geometry: 'Icosahedron',
+          geometry: 'Capsule',
           material: 'Phong',
           position: { x: offset - i, y: offset - j, z: offset - k },
           materialProps: {
@@ -44,7 +47,7 @@ const meshes = computed(() => {
           },
           geometryProps: {
             radius: 0.3,
-            detail: 0
+            length: 0.3
           }
         };
         arr.push(object);
@@ -54,6 +57,11 @@ const meshes = computed(() => {
 
   return arr;
 });
+
+// onMounted(async () => {
+//   const x = await loadObject("/assets/models/Parrot.glb");
+//   console.log(x)
+// })
 </script>
 
 <template>
@@ -66,18 +74,8 @@ const meshes = computed(() => {
       :position="{ x: 10, y: 10, z: 10 }"
     />
     <Scene :background="sceneBackground">
-      <Mesh
-        v-for="mesh in meshes"
-        :key="mesh.key"
-        :geometry="mesh.geometry"
-        :material="mesh.material"
-        :position="mesh.position"
-        :onMeshRotation="handleMeshChange"
-        :materialProps="mesh.materialProps"
-        :geometryProps="mesh.geometryProps"
-      />
+      <Mesh src="/assets/models/Stork.glb" :position="{x: 0, y: 0, z:0}"/>
     </Scene>
   </Renderer>
 </template>
 
-<style scoped></style>
