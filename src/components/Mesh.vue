@@ -5,10 +5,13 @@ import type { Position } from '@/typings';
 import { TickableMesh } from '@/misc';
 import { useAnimationStore } from '@/stores';
 import * as definitions from '@/mappings';
-import { useLoader } from '@/hooks/useLoader';
+import { useLoader } from '@/composables/useLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import URDFLoader from 'urdf-loader';
 
 export interface Props {
   src?: string;
+  loader?: any;
   material?: string;
   geometry?: string;
   position: Position;
@@ -19,6 +22,7 @@ export interface Props {
 
 const props = defineProps({
   src: { type: String, required: false, default: '' },
+  loader: {type: [URDFLoader, GLTFLoader], required: false, default: new GLTFLoader()},
   material: { type: String, required: false, default: 'Basic' },
   geometry: { type: String, required: false, default: 'Box' },
   position: { type: Object as PropType<Position>, required: true },
@@ -38,14 +42,18 @@ const isUsingLoader = computed(() => {
 });
 
 if (isUsingLoader.value) {
-  const { data, error } = useLoader(props.src);
+  const { data, error } = useLoader(props.src, props.loader);
   watch(data, (n) => {
+    console.log(n);
     if (n) {
       n.position.set(
         (props as Props).position.x,
         (props as Props).position.y,
         (props as Props).position.z
       );
+      n.tick = (delta: number) => {
+        props.onMeshRotation(n, delta);
+      }
       store.updateMeshArray(toRaw(n));
     }
   });

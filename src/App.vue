@@ -7,15 +7,29 @@ import Camera from './components/Camera.vue';
 import { computed, onMounted } from 'vue';
 import { loadObject } from './loader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { useLoader } from './composables/useLoader';
+import URDFLoader, { type URDFRobot } from 'urdf-loader';
 
 const sceneBackground = new THREE.Color('skyblue');
 
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-const handleMeshChange = (mesh: THREE.Mesh, delta: number): void => {
+const handleMeshChange = (mesh: THREE.Mesh | URDFRobot, delta: number): void => {
   const radiansPerSecond = THREE.MathUtils.degToRad(120);
+  const radiansPerSecondJoints = {
+    "HP": THREE.MathUtils.degToRad(30),
+    "KP": THREE.MathUtils.degToRad(120),
+    "AP": THREE.MathUtils.degToRad(-60)
+  }
   mesh.rotation.y += radiansPerSecond * delta;
+
+  for (let i = 1; i <= 6; i++) {
+    (mesh as URDFRobot).joints[`HP${i}`].setJointValue(radiansPerSecondJoints["HP"] * delta + ((mesh as URDFRobot).joints[`HP${i}`].jointValue[0] as number));
+    (mesh as URDFRobot).joints[`KP${i}`].setJointValue(radiansPerSecondJoints["KP"]);
+    (mesh as URDFRobot).joints[`AP${i}`].setJointValue(radiansPerSecondJoints["AP"]);
+
+  }
 };
 
 const meshes = computed(() => {
@@ -57,10 +71,6 @@ const meshes = computed(() => {
   return arr;
 });
 
-// onMounted(async () => {
-//   const x = await loadObject("/assets/models/Parrot.glb");
-//   console.log(x)
-// })
 </script>
 
 <template>
@@ -70,12 +80,10 @@ const meshes = computed(() => {
       :aspect="width / height"
       :near="0.1"
       :far="1000"
-      :position="{ x: 200, y: 200, z: 200 }"
+      :position="{ x: 10, y: 10, z: 10 }"
     />
     <Scene :background="sceneBackground">
-      <Mesh src="/assets/models/Stork.glb" :position="{ x: 0, y: 0, z: 0 }" />
-      <Mesh src="/assets/models/Parrot.glb" :position="{ x: 200, y: 0, z: 0 }" />
-      <Mesh src="/assets/models/Flamingo.glb" :position="{ x: -200, y: 0, z: 0 }" />
+      <Mesh src="/assets/models/T12/urdf/T12.URDF" :loader="new URDFLoader()" :position="{ x: 0, y: 0, z: 0 }" :onMeshRotation="handleMeshChange" />
     </Scene>
   </Renderer>
 </template>

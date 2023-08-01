@@ -1,12 +1,12 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { Camera, Mesh, Scene } from 'three';
-import type { TickableMesh } from '@/classes';
+import type { Tickable, TickableMesh } from '@/classes';
 
 export const useAnimationStore = defineStore('animation', () => {
   const scene = ref();
   const camera = ref();
-  const meshArray = ref<TickableMesh[]>([]);
+  const meshArray = ref<Tickable[]>([]);
 
   function setScene(value: Scene) {
     scene.value = value;
@@ -16,7 +16,7 @@ export const useAnimationStore = defineStore('animation', () => {
     camera.value = value;
   }
 
-  function updateMeshArray(value: Mesh) {
+  function updateMeshArray(value: Tickable) {
     meshArray.value.push(value);
   }
 
