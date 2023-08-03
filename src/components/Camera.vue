@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAnimationStore } from '@/stores';
 import { PerspectiveCamera } from 'three';
-import type { Position } from '@/typings';
+import type { Position } from '@/utils/typings';
 import type { PropType } from 'vue';
 
 const props = defineProps({
@@ -33,3 +33,4 @@ const camera = new PerspectiveCamera(props.fov, props.aspect, props.near, props.
 camera.position.set(props.position.x, props.position.y, props.position.z);
 store.setCamera(camera);
 </script>
+@/utils/typings

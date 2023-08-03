@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { Camera, Mesh, Scene } from 'three';
-import type { Tickable, TickableMesh } from '@/classes';
+import type { Tickable } from '@/utils/misc';
 
 export const useAnimationStore = defineStore('animation', () => {
   const scene = ref();

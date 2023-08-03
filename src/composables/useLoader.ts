@@ -1,5 +1,5 @@
 import type { Tickable, TickableURDFRobot } from '@/classes';
-import type { TickableMesh } from '@/misc';
+import type { TickableMesh } from '@/utils/misc';
 import { LoadingManager } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { URDFRobot } from 'urdf-loader';

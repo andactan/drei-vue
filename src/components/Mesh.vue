@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { BufferGeometry, Color } from 'three';
-import { computed, onUnmounted, onUpdated, toRaw, watch, type PropType } from 'vue';
-import type { Position } from '@/typings';
-import { TickableMesh } from '@/misc';
+import { computed, onUnmounted, toRaw, watch, type PropType } from 'vue';
+import type { Position } from '@/utils/typings';
+import { TickableMesh } from '@/utils/misc';
 import { useAnimationStore } from '@/stores';
-import * as definitions from '@/mappings';
+import * as definitions from '@/utils/mappings';
 import { useLoader } from '@/composables/useLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import URDFLoader from 'urdf-loader';
@@ -92,3 +92,4 @@ onUnmounted(() => {
   store.resetMeshArray();
 });
 </script>
+@/utils/mappings@/utils/typings
