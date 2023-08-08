@@ -2,9 +2,10 @@
 import { RendererInjectionKey, SceneInjectionKey } from '../keys';
 import { Camera, Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { inject, onMounted, onUnmounted, provide, ref, toRaw, watch } from 'vue';
+import { computed, onMounted, onUnmounted, provide, ref, toRaw, watch } from 'vue';
 import { useAnimationStore } from '@/stores';
 import Stats from 'three/addons/libs/stats.module.js';
+import { stringify } from 'querystring';
 
 const props = defineProps<{
   width: number;
@@ -28,11 +29,12 @@ const onWindowResize = (camera: PerspectiveCamera) => {
   renderer.setPixelRatio(window.devicePixelRatio);
 };
 
+let counter = 0;
 const start = (scene: Scene, camera: Camera, stats: Stats): void => {
   renderer.setAnimationLoop(() => {
     tick();
-    renderer.render(scene, camera);
     stats.update();
+    renderer.render(scene, camera);
   });
 };
 
@@ -49,15 +51,51 @@ const tick = (): void => {
   }
 };
 
-onMounted(() => {
+function until(conditionFunction) {
+  console.log(conditionFunction());
+  const poll = (resolve) => {
+    if (conditionFunction()) {
+      console.log('doing that');
+      resolve();
+    } else {
+      console.log('doing this');
+      setTimeout((_) => poll(resolve));
+    }
+  };
+
+  return new Promise(poll);
+}
+
+watch(
+  () => store.scene,
+  (n, o) => {
+    // console.log(JSON.parse(JSON.stringify(scene)));
+    console.log(toRaw(n));
+    renderer.render(toRaw(n), toRaw(store.camera));
+  },
+  { deep: true }
+);
+
+onMounted(async () => {
   const scene = toRaw(store.scene);
   const camera = toRaw(store.camera);
   const container = document.querySelector('#scene-container');
-  console.log(container);
   container?.append(renderer.domElement);
   container?.append(stats.dom);
   const controls = new OrbitControls(camera, renderer.domElement);
-  start(scene, camera, stats);
+
+  await until(
+    () =>
+      'geometries' in toRaw(store.scene).toJSON() &&
+      toRaw(store.scene).toJSON().geometries.length > 10
+  );
+  console.log(toRaw(store.scene).toJSON());
+  renderer.render(scene, camera);
+  const sceneChildren = computed(() => store.scene.children.length);
+  console.log(sceneChildren.value);
+  console.log(scene.toJSON()?.geometries);
+
+  //   start(scene, camera, stats);
   window.addEventListener('resize', () => onWindowResize(camera));
 });
 

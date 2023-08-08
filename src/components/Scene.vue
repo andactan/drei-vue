@@ -30,7 +30,6 @@ const meshArrayLength = computed(() => {
 watch(meshArrayLength, (newLength, oldLength) => {
   if (newLength === 0) return;
   if (newLength <= 1) {
-    console.log(store.meshArray);
     store.scene.add(toRaw(store.meshArray[0]));
   } else {
     store.scene.add(...toRaw(store.meshArray.slice(oldLength, newLength)));
@@ -38,10 +37,6 @@ watch(meshArrayLength, (newLength, oldLength) => {
 });
 
 onMounted(() => {
-  console.log('I am mounting');
-  console.log(store.meshArray);
-  console.log(meshArrayLength.value);
-
   if (meshArrayLength.value > 0) {
     store.scene.add(...toRaw(store.meshArray));
   }

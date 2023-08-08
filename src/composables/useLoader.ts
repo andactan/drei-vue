@@ -19,14 +19,17 @@ function useLoader(path: string, loader: GLTFLoader | URDFLoader) {
   const data: Ref<TickableMesh | TickableURDFRobot | null> = ref(null);
   const error = ref(null);
 
+  loader.manager.onProgress = (_, loaded, total) => {
+    console.log(loaded, total)
+  }
   loader.load(
     path,
-    function onLoad(gltf) {
+    (gltf) => {
       const _object = _setupObject(gltf);
       _object.tick = (delta: number) => {console.log("anan")}
       data.value = _object;
-      console.log(gltf)
-    }
+      console.log("I am done")
+    },
   )
 
   return { data, error };

@@ -22,7 +22,7 @@ export interface Props {
 
 const props = defineProps({
   src: { type: String, required: false, default: '' },
-  loader: {type: [URDFLoader, GLTFLoader], required: false, default: new GLTFLoader()},
+  loader: { type: [URDFLoader, GLTFLoader], required: false, default: new GLTFLoader() },
   material: { type: String, required: false, default: 'Basic' },
   geometry: { type: String, required: false, default: 'Box' },
   position: { type: Object as PropType<Position>, required: true },
@@ -44,7 +44,6 @@ const isUsingLoader = computed(() => {
 if (isUsingLoader.value) {
   const { data, error } = useLoader(props.src, props.loader);
   watch(data, (n) => {
-    console.log(n);
     if (n) {
       n.position.set(
         (props as Props).position.x,
@@ -53,7 +52,7 @@ if (isUsingLoader.value) {
       );
       n.tick = (delta: number) => {
         props.onMeshRotation(n, delta);
-      }
+      };
       store.updateMeshArray(toRaw(n));
     }
   });
@@ -92,4 +91,4 @@ onUnmounted(() => {
   store.resetMeshArray();
 });
 </script>
-@/utils/mappings@/utils/typings
+<template></template>
